@@ -377,6 +377,7 @@ window.setAsDefault = async function (richMenuId) {
 
 // NOTE: 用來暫存複製編輯器的選單副本
 let cloneEditorData = null;
+let cloneOriginalId = null; // 原始選單 ID，用於複製圖片
 
 const cloneEditorModal = document.getElementById('cloneEditorModal');
 
@@ -385,6 +386,14 @@ document.getElementById('btnCloseCloneEditor').addEventListener('click', () => {
 });
 document.getElementById('btnCloseCloneEditor2').addEventListener('click', () => {
     cloneEditorModal.classList.remove('open');
+});
+
+// 圖片選項 radio 切換：選「上傳新圖片」才顯示 file input
+document.querySelectorAll('input[name="cloneImageOption"]').forEach((radio) => {
+    radio.addEventListener('change', () => {
+        const uploadArea = document.getElementById('cloneImageUploadArea');
+        uploadArea.style.display = radio.value === 'upload' && radio.checked ? 'block' : 'none';
+    });
 });
 
 /**
@@ -594,8 +603,13 @@ window.cloneMenu = async function (richMenuId) {
 
     // 深拷貝並移除 richMenuId
     cloneEditorData = JSON.parse(JSON.stringify(menu));
-    const originalId = cloneEditorData.richMenuId;
+    cloneOriginalId = cloneEditorData.richMenuId;
     delete cloneEditorData.richMenuId;
+
+    // 重設圖片選項
+    document.querySelector('input[name="cloneImageOption"][value="original"]').checked = true;
+    document.getElementById('cloneImageUploadArea').style.display = 'none';
+    document.getElementById('cloneImageFile').value = '';
     cloneEditorData.name = `${cloneEditorData.name}（副本）`;
 
     // 設定標題與基本欄位
@@ -611,7 +625,7 @@ window.cloneMenu = async function (richMenuId) {
     document.getElementById('clonePreviewOverlay').innerHTML = '';
 
     try {
-        const res = await fetch(`/api/richmenus/${originalId}/image`);
+        const res = await fetch(`/api/richmenus/${cloneOriginalId}/image`);
         if (res.ok) {
             const blob = await res.blob();
             imgEl.src = URL.createObjectURL(blob);
@@ -633,8 +647,12 @@ window.cloneMenu = async function (richMenuId) {
     cloneEditorModal.classList.add('open');
 };
 
-/** 建立選單按鈕 */
+/** 建立選單按鈕（含圖片處理） */
 document.getElementById('btnSubmitClone').addEventListener('click', async () => {
+    const submitBtn = document.getElementById('btnSubmitClone');
+    submitBtn.disabled = true;
+    submitBtn.textContent = '⏳ 建立中...';
+
     try {
         const menuData = collectCloneData();
 
@@ -643,12 +661,58 @@ document.getElementById('btnSubmitClone').addEventListener('click', async () => 
             return;
         }
 
+        // 步驟 1: 建立選單
         const { data: result } = await api('/api/richmenus', {
             method: 'POST',
             body: JSON.stringify(menuData),
         });
+        const newMenuId = result.richMenuId;
+        toast(`選單已建立！ID：${newMenuId}`, 'success');
 
-        toast(`選單已建立！ID：${result.richMenuId}`, 'success');
+        // 步驟 2: 處理圖片
+        const imageOption = document.querySelector('input[name="cloneImageOption"]:checked').value;
+
+        if (imageOption === 'original' && cloneOriginalId) {
+            // NOTE: 下載原始圖片，再上傳到新選單
+            try {
+                submitBtn.textContent = '⏳ 複製圖片中...';
+                const imgRes = await fetch(`/api/richmenus/${cloneOriginalId}/image`);
+                if (imgRes.ok) {
+                    const imgBlob = await imgRes.blob();
+                    const formData = new FormData();
+                    formData.append('image', imgBlob, 'menu.png');
+                    await fetch(`/api/richmenus/${newMenuId}/image`, {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    toast('圖片已複製到新選單', 'success');
+                } else {
+                    toast('原選單無圖片，請稍後手動上傳', 'warning');
+                }
+            } catch (imgErr) {
+                toast(`圖片複製失敗：${imgErr.message}`, 'error');
+            }
+        } else if (imageOption === 'upload') {
+            // NOTE: 上傳使用者選擇的新圖片
+            const fileInput = document.getElementById('cloneImageFile');
+            if (fileInput.files.length > 0) {
+                try {
+                    submitBtn.textContent = '⏳ 上傳圖片中...';
+                    const formData = new FormData();
+                    formData.append('image', fileInput.files[0]);
+                    await fetch(`/api/richmenus/${newMenuId}/image`, {
+                        method: 'POST',
+                        body: formData,
+                    });
+                    toast('新圖片已上傳', 'success');
+                } catch (imgErr) {
+                    toast(`圖片上傳失敗：${imgErr.message}`, 'error');
+                }
+            } else {
+                toast('未選擇圖片，請稍後手動上傳', 'warning');
+            }
+        }
+
         cloneEditorModal.classList.remove('open');
 
         // 切換到選單管理頁並重新載入
@@ -656,6 +720,9 @@ document.getElementById('btnSubmitClone').addEventListener('click', async () => 
         loadMenus();
     } catch (err) {
         toast(err.message, 'error');
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = '🚀 建立選單';
     }
 });
 

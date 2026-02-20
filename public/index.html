@@ -289,6 +289,29 @@
           <div id="clonePreviewOverlay" class="preview-overlay"></div>
         </div>
 
+        <!-- 圖片選項 -->
+        <div class="clone-settings clone-image-options">
+          <h4>🖼️ 圖片</h4>
+          <div class="clone-radio-group">
+            <label class="clone-radio">
+              <input type="radio" name="cloneImageOption" value="original" checked>
+              <span>使用原圖片</span>
+            </label>
+            <label class="clone-radio">
+              <input type="radio" name="cloneImageOption" value="upload">
+              <span>上傳新圖片</span>
+            </label>
+            <label class="clone-radio">
+              <input type="radio" name="cloneImageOption" value="none">
+              <span>稍後再上傳</span>
+            </label>
+          </div>
+          <div id="cloneImageUploadArea" class="clone-upload-area" style="display:none">
+            <input type="file" id="cloneImageFile" accept="image/png,image/jpeg">
+            <p class="empty-hint">僅支援 PNG 或 JPEG，1MB 以下</p>
+          </div>
+        </div>
+
         <!-- 基本設定 -->
         <div class="clone-settings">
           <h4>📝 基本設定</h4>
