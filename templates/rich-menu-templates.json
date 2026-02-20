@@ -1,0 +1,369 @@
+{
+    "templates": [
+        {
+            "id": "full-single",
+            "name": "全版單區",
+            "description": "2500x1686 全螢幕單一點擊區域",
+            "data": {
+                "size": {
+                    "width": 2500,
+                    "height": 1686
+                },
+                "selected": true,
+                "name": "全版單區選單",
+                "chatBarText": "點擊開啟選單",
+                "areas": [
+                    {
+                        "bounds": {
+                            "x": 0,
+                            "y": 0,
+                            "width": 2500,
+                            "height": 1686
+                        },
+                        "action": {
+                            "type": "uri",
+                            "label": "開啟連結",
+                            "uri": "https://example.com"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": "half-two-columns",
+            "name": "左右雙分割",
+            "description": "2500x1686 左右各一個點擊區域",
+            "data": {
+                "size": {
+                    "width": 2500,
+                    "height": 1686
+                },
+                "selected": true,
+                "name": "左右雙分割選單",
+                "chatBarText": "點擊開啟選單",
+                "areas": [
+                    {
+                        "bounds": {
+                            "x": 0,
+                            "y": 0,
+                            "width": 1250,
+                            "height": 1686
+                        },
+                        "action": {
+                            "type": "uri",
+                            "label": "左側區域",
+                            "uri": "https://example.com/left"
+                        }
+                    },
+                    {
+                        "bounds": {
+                            "x": 1250,
+                            "y": 0,
+                            "width": 1250,
+                            "height": 1686
+                        },
+                        "action": {
+                            "type": "uri",
+                            "label": "右側區域",
+                            "uri": "https://example.com/right"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": "three-columns",
+            "name": "三欄分割（官方範例）",
+            "description": "2500x1686 左大右上右下三區域（LINE 官方範例）",
+            "data": {
+                "size": {
+                    "width": 2500,
+                    "height": 1686
+                },
+                "selected": false,
+                "name": "三欄分割選單",
+                "chatBarText": "點擊開啟選單",
+                "areas": [
+                    {
+                        "bounds": {
+                            "x": 0,
+                            "y": 0,
+                            "width": 1666,
+                            "height": 1686
+                        },
+                        "action": {
+                            "type": "uri",
+                            "label": "區域 A",
+                            "uri": "https://example.com/a"
+                        }
+                    },
+                    {
+                        "bounds": {
+                            "x": 1667,
+                            "y": 0,
+                            "width": 834,
+                            "height": 843
+                        },
+                        "action": {
+                            "type": "uri",
+                            "label": "區域 B",
+                            "uri": "https://example.com/b"
+                        }
+                    },
+                    {
+                        "bounds": {
+                            "x": 1667,
+                            "y": 844,
+                            "width": 834,
+                            "height": 843
+                        },
+                        "action": {
+                            "type": "uri",
+                            "label": "區域 C",
+                            "uri": "https://example.com/c"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": "six-grid",
+            "name": "六宮格",
+            "description": "2500x1686 六個等分區域（2行3列）",
+            "data": {
+                "size": {
+                    "width": 2500,
+                    "height": 1686
+                },
+                "selected": true,
+                "name": "六宮格選單",
+                "chatBarText": "點擊開啟選單",
+                "areas": [
+                    {
+                        "bounds": {
+                            "x": 0,
+                            "y": 0,
+                            "width": 833,
+                            "height": 843
+                        },
+                        "action": {
+                            "type": "message",
+                            "label": "功能 1",
+                            "text": "功能1"
+                        }
+                    },
+                    {
+                        "bounds": {
+                            "x": 833,
+                            "y": 0,
+                            "width": 834,
+                            "height": 843
+                        },
+                        "action": {
+                            "type": "message",
+                            "label": "功能 2",
+                            "text": "功能2"
+                        }
+                    },
+                    {
+                        "bounds": {
+                            "x": 1667,
+                            "y": 0,
+                            "width": 833,
+                            "height": 843
+                        },
+                        "action": {
+                            "type": "message",
+                            "label": "功能 3",
+                            "text": "功能3"
+                        }
+                    },
+                    {
+                        "bounds": {
+                            "x": 0,
+                            "y": 843,
+                            "width": 833,
+                            "height": 843
+                        },
+                        "action": {
+                            "type": "message",
+                            "label": "功能 4",
+                            "text": "功能4"
+                        }
+                    },
+                    {
+                        "bounds": {
+                            "x": 833,
+                            "y": 843,
+                            "width": 834,
+                            "height": 843
+                        },
+                        "action": {
+                            "type": "message",
+                            "label": "功能 5",
+                            "text": "功能5"
+                        }
+                    },
+                    {
+                        "bounds": {
+                            "x": 1667,
+                            "y": 843,
+                            "width": 833,
+                            "height": 843
+                        },
+                        "action": {
+                            "type": "message",
+                            "label": "功能 6",
+                            "text": "功能6"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": "half-height-three",
+            "name": "半高三欄",
+            "description": "2500x843 半高三等分區域",
+            "data": {
+                "size": {
+                    "width": 2500,
+                    "height": 843
+                },
+                "selected": true,
+                "name": "半高三欄選單",
+                "chatBarText": "點擊開啟選單",
+                "areas": [
+                    {
+                        "bounds": {
+                            "x": 0,
+                            "y": 0,
+                            "width": 833,
+                            "height": 843
+                        },
+                        "action": {
+                            "type": "message",
+                            "label": "選項 1",
+                            "text": "選項1"
+                        }
+                    },
+                    {
+                        "bounds": {
+                            "x": 833,
+                            "y": 0,
+                            "width": 834,
+                            "height": 843
+                        },
+                        "action": {
+                            "type": "message",
+                            "label": "選項 2",
+                            "text": "選項2"
+                        }
+                    },
+                    {
+                        "bounds": {
+                            "x": 1667,
+                            "y": 0,
+                            "width": 833,
+                            "height": 843
+                        },
+                        "action": {
+                            "type": "message",
+                            "label": "選項 3",
+                            "text": "選項3"
+                        }
+                    }
+                ]
+            }
+        },
+        {
+            "id": "multi-page",
+            "name": "多層換頁（richmenuswitch）",
+            "description": "2500x1686 含 richmenuswitch action 實現頁面切換",
+            "note": "此模板需要建立兩個 Rich Menu 並分別設定別名，再搭配 richmenuswitch action 切換",
+            "pages": [
+                {
+                    "pageId": "page-a",
+                    "aliasId": "richmenu-alias-page-a",
+                    "data": {
+                        "size": {
+                            "width": 2500,
+                            "height": 1686
+                        },
+                        "selected": true,
+                        "name": "多層選單 - 頁面 A",
+                        "chatBarText": "點擊開啟選單",
+                        "areas": [
+                            {
+                                "bounds": {
+                                    "x": 0,
+                                    "y": 0,
+                                    "width": 1250,
+                                    "height": 1686
+                                },
+                                "action": {
+                                    "type": "message",
+                                    "label": "頁面 A 功能",
+                                    "text": "頁面A功能"
+                                }
+                            },
+                            {
+                                "bounds": {
+                                    "x": 1250,
+                                    "y": 0,
+                                    "width": 1250,
+                                    "height": 1686
+                                },
+                                "action": {
+                                    "type": "richmenuswitch",
+                                    "richMenuAliasId": "richmenu-alias-page-b",
+                                    "data": "switch-to-page-b"
+                                }
+                            }
+                        ]
+                    }
+                },
+                {
+                    "pageId": "page-b",
+                    "aliasId": "richmenu-alias-page-b",
+                    "data": {
+                        "size": {
+                            "width": 2500,
+                            "height": 1686
+                        },
+                        "selected": true,
+                        "name": "多層選單 - 頁面 B",
+                        "chatBarText": "點擊開啟選單",
+                        "areas": [
+                            {
+                                "bounds": {
+                                    "x": 0,
+                                    "y": 0,
+                                    "width": 1250,
+                                    "height": 1686
+                                },
+                                "action": {
+                                    "type": "richmenuswitch",
+                                    "richMenuAliasId": "richmenu-alias-page-a",
+                                    "data": "switch-to-page-a"
+                                }
+                            },
+                            {
+                                "bounds": {
+                                    "x": 1250,
+                                    "y": 0,
+                                    "width": 1250,
+                                    "height": 1686
+                                },
+                                "action": {
+                                    "type": "message",
+                                    "label": "頁面 B 功能",
+                                    "text": "頁面B功能"
+                                }
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    ]
+}

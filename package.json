@@ -1,0 +1,30 @@
+{
+  "name": "line-rich-menu-manager",
+  "version": "1.0.0",
+  "description": "LINE Rich Menu 管理工具 - 提供 CLI 與 Web UI 管理介面",
+  "type": "module",
+  "main": "src/server.js",
+  "bin": {
+    "rich-menu": "./src/cli.js"
+  },
+  "scripts": {
+    "dev": "node src/server.js",
+    "cli": "node src/cli.js",
+    "start": "NODE_ENV=production node src/server.js"
+  },
+  "keywords": [
+    "line",
+    "rich-menu",
+    "messaging-api",
+    "bot"
+  ],
+  "author": "TCUnion",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "inquirer": "^12.3.2",
+    "multer": "^1.4.5-lts.1",
+    "node-fetch": "^3.3.2"
+  }
+}
