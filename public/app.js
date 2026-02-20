@@ -205,6 +205,7 @@ async function loadMenus() {
             <div class="menu-card-id">${menu.richMenuId}</div>
           </div>
           <div class="menu-card-actions">
+            <button class="btn btn-sm btn-secondary" onclick="viewMenuJson('${menu.richMenuId}')">📄 查看 JSON</button>
             <button class="btn btn-sm btn-secondary" onclick="openUploadModal('${menu.richMenuId}', '${menu.name}')">🖼️ 上傳圖片</button>
             <button class="btn btn-sm btn-secondary" onclick="setAsDefault('${menu.richMenuId}')">⭐ 設為預設</button>
             <button class="btn btn-sm btn-danger" onclick="deleteMenu('${menu.richMenuId}')">🗑️ 刪除</button>
@@ -654,6 +655,81 @@ window.deleteAlias = async function (aliasId) {
         toast(err.message, 'error');
     }
 };
+
+// ============================================================
+// JSON 查看器
+// ============================================================
+
+const jsonViewModal = document.getElementById('jsonViewModal');
+
+// 關閉按鈕
+document.getElementById('btnCloseJsonView').addEventListener('click', () => {
+    jsonViewModal.classList.remove('open');
+});
+document.getElementById('btnCloseJsonView2').addEventListener('click', () => {
+    jsonViewModal.classList.remove('open');
+});
+
+/**
+ * JSON 語法高亮
+ * 將 JSON 字串中的 key、string、number、boolean、null 加上對應的 CSS class
+ * @param {string} json - 格式化後的 JSON 字串
+ * @returns {string} 帶 HTML 標籤的高亮字串
+ */
+function highlightJson(json) {
+    // NOTE: 先將特殊字元轉義，再針對 JSON 結構加上 span 標籤
+    return json
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(
+            /("(\\u[a-fA-F0-9]{4}|\\[^u]|[^\\"])*")(\s*:)?/g,
+            (match, str, _inner, colon) => {
+                if (colon) {
+                    // JSON key
+                    return `<span class="json-key">${str}</span>${colon}`;
+                }
+                // JSON string value
+                return `<span class="json-string">${str}</span>`;
+            }
+        )
+        .replace(/\b(-?\d+(\.\d+)?([eE][+-]?\d+)?)\b/g, '<span class="json-number">$1</span>')
+        .replace(/\b(true|false)\b/g, '<span class="json-bool">$1</span>')
+        .replace(/\bnull\b/g, '<span class="json-null">null</span>');
+}
+
+/** 查看選單 JSON（從已載入的 currentMenus 中取得） */
+window.viewMenuJson = function (richMenuId) {
+    const menu = currentMenus.find((m) => m.richMenuId === richMenuId);
+    if (!menu) {
+        toast('找不到選單資料', 'error');
+        return;
+    }
+
+    const jsonStr = JSON.stringify(menu, null, 2);
+
+    // 設定標題
+    document.getElementById('jsonViewTitle').textContent = `${menu.name} — JSON`;
+
+    // 顯示 meta 資訊
+    document.getElementById('jsonViewMeta').textContent =
+        `${menu.areas.length} 個區域 ・ ${menu.size.width}×${menu.size.height}`;
+
+    // 語法高亮後填入
+    document.querySelector('#jsonViewContent code').innerHTML = highlightJson(jsonStr);
+
+    jsonViewModal.classList.add('open');
+};
+
+// 複製 JSON
+document.getElementById('btnCopyJson').addEventListener('click', () => {
+    const code = document.querySelector('#jsonViewContent code');
+    const text = code.textContent;
+    navigator.clipboard.writeText(text).then(
+        () => toast('JSON 已複製到剪貼簿', 'success'),
+        () => toast('複製失敗', 'error')
+    );
+});
 
 // ============================================================
 // 初始化

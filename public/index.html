@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,9 +8,12 @@
   <meta name="description" content="LINE Messaging API Rich Menu 視覺化管理介面">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
   <div id="app">
     <!-- 頂部導航 -->
@@ -17,9 +21,9 @@
       <div class="header-left">
         <div class="logo">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <line x1="3" y1="9" x2="21" y2="9"/>
-            <line x1="9" y1="9" x2="9" y2="21"/>
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="3" y1="9" x2="21" y2="9" />
+            <line x1="9" y1="9" x2="9" y2="21" />
           </svg>
           <h1>Rich Menu Manager</h1>
         </div>
@@ -31,8 +35,8 @@
         </div>
         <button id="btnSetToken" class="btn btn-ghost" title="設定 Token">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
-            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
           </svg>
         </button>
       </div>
@@ -44,33 +48,33 @@
       <nav class="sidebar">
         <button class="nav-item active" data-section="menus">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <line x1="3" y1="9" x2="21" y2="9"/>
-            <line x1="9" y1="9" x2="9" y2="21"/>
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <line x1="3" y1="9" x2="21" y2="9" />
+            <line x1="9" y1="9" x2="9" y2="21" />
           </svg>
           <span>選單管理</span>
         </button>
         <button class="nav-item" data-section="create">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="16"/>
-            <line x1="8" y1="12" x2="16" y2="12"/>
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="16" />
+            <line x1="8" y1="12" x2="16" y2="12" />
           </svg>
           <span>建立選單</span>
         </button>
         <button class="nav-item" data-section="users">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
-            <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+            <circle cx="9" cy="7" r="4" />
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+            <path d="M16 3.13a4 4 0 0 1 0 7.75" />
           </svg>
           <span>使用者綁定</span>
         </button>
         <button class="nav-item" data-section="aliases">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
           </svg>
           <span>別名管理</span>
         </button>
@@ -85,8 +89,8 @@
             <div class="section-actions">
               <button id="btnRefresh" class="btn btn-secondary">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="23 4 23 10 17 10"/>
-                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                  <polyline points="23 4 23 10 17 10" />
+                  <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
                 </svg>
                 重新整理
               </button>
@@ -94,9 +98,10 @@
           </div>
           <div id="menuList" class="menu-grid">
             <div class="empty-state">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
-                <rect x="3" y="3" width="18" height="18" rx="2"/>
-                <line x1="3" y1="9" x2="21" y2="9"/>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+                opacity="0.4">
+                <rect x="3" y="3" width="18" height="18" rx="2" />
+                <line x1="3" y1="9" x2="21" y2="9" />
               </svg>
               <p>尚未載入選單資料</p>
               <p class="empty-hint">請先設定 Channel Access Token</p>
@@ -117,7 +122,8 @@
             </div>
             <h3>自訂 JSON</h3>
             <div class="json-editor">
-              <textarea id="jsonEditor" rows="20" placeholder='貼上 Rich Menu JSON...&#10;&#10;{&#10;  "size": { "width": 2500, "height": 1686 },&#10;  "selected": true,&#10;  "name": "我的選單",&#10;  "chatBarText": "點擊開啟",&#10;  "areas": [...]&#10;}'></textarea>
+              <textarea id="jsonEditor" rows="20"
+                placeholder='貼上 Rich Menu JSON...&#10;&#10;{&#10;  "size": { "width": 2500, "height": 1686 },&#10;  "selected": true,&#10;  "name": "我的選單",&#10;  "chatBarText": "點擊開啟",&#10;  "areas": [...]&#10;}'></textarea>
               <div class="json-actions">
                 <button id="btnValidate" class="btn btn-secondary">驗證 JSON</button>
                 <button id="btnCreateFromJson" class="btn btn-primary">建立選單</button>
@@ -192,66 +198,88 @@
           </div>
         </section>
       </div>
-    </div>
+  </div>
 
-    <!-- Token 設定對話框 -->
-    <div id="tokenModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>設定 Channel Access Token</h3>
-          <button class="modal-close" id="btnCloseModal">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p class="modal-desc">
-            從 <a href="https://developers.line.biz/console/" target="_blank" rel="noopener">LINE Developers Console</a>
-            取得你的 Channel Access Token。
-          </p>
-          <div class="form-group">
-            <label for="tokenInput">Channel Access Token</label>
-            <input type="password" id="tokenInput" placeholder="貼上你的 Token...">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" id="btnCancelToken">取消</button>
-          <button class="btn btn-primary" id="btnSaveToken">儲存</button>
+  <!-- Token 設定對話框 -->
+  <div id="tokenModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>設定 Channel Access Token</h3>
+        <button class="modal-close" id="btnCloseModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-desc">
+          從 <a href="https://developers.line.biz/console/" target="_blank" rel="noopener">LINE Developers Console</a>
+          取得你的 Channel Access Token。
+        </p>
+        <div class="form-group">
+          <label for="tokenInput">Channel Access Token</label>
+          <input type="password" id="tokenInput" placeholder="貼上你的 Token...">
         </div>
       </div>
-    </div>
-
-    <!-- 圖片上傳對話框 -->
-    <div id="uploadModal" class="modal">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h3>上傳選單圖片</h3>
-          <button class="modal-close" id="btnCloseUpload">&times;</button>
-        </div>
-        <div class="modal-body">
-          <p id="uploadMenuName" class="modal-desc"></p>
-          <div class="upload-area" id="uploadArea">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.4">
-              <rect x="3" y="3" width="18" height="18" rx="2"/>
-              <circle cx="8.5" cy="8.5" r="1.5"/>
-              <polyline points="21 15 16 10 5 21"/>
-            </svg>
-            <p>拖拉圖片到此處，或點擊選擇</p>
-            <p class="upload-hint">支援 PNG / JPEG，上限 1MB</p>
-            <input type="file" id="imageInput" accept="image/png,image/jpeg" hidden>
-          </div>
-          <div id="imagePreview" class="image-preview" style="display:none">
-            <img id="previewImg" alt="預覽">
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button class="btn btn-secondary" id="btnCancelUpload">取消</button>
-          <button class="btn btn-primary" id="btnConfirmUpload" disabled>上傳</button>
-        </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCancelToken">取消</button>
+        <button class="btn btn-primary" id="btnSaveToken">儲存</button>
       </div>
     </div>
+  </div>
 
-    <!-- Toast 通知 -->
-    <div id="toastContainer" class="toast-container"></div>
+  <!-- 圖片上傳對話框 -->
+  <div id="uploadModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>上傳選單圖片</h3>
+        <button class="modal-close" id="btnCloseUpload">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="uploadMenuName" class="modal-desc"></p>
+        <div class="upload-area" id="uploadArea">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"
+            opacity="0.4">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <circle cx="8.5" cy="8.5" r="1.5" />
+            <polyline points="21 15 16 10 5 21" />
+          </svg>
+          <p>拖拉圖片到此處，或點擊選擇</p>
+          <p class="upload-hint">支援 PNG / JPEG，上限 1MB</p>
+          <input type="file" id="imageInput" accept="image/png,image/jpeg" hidden>
+        </div>
+        <div id="imagePreview" class="image-preview" style="display:none">
+          <img id="previewImg" alt="預覽">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCancelUpload">取消</button>
+        <button class="btn btn-primary" id="btnConfirmUpload" disabled>上傳</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JSON 查看對話框 -->
+  <div id="jsonViewModal" class="modal">
+    <div class="modal-content modal-wide">
+      <div class="modal-header">
+        <h3 id="jsonViewTitle">選單 JSON</h3>
+        <button class="modal-close" id="btnCloseJsonView">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="json-view-toolbar">
+          <button id="btnCopyJson" class="btn btn-sm btn-secondary">📋 複製 JSON</button>
+          <span id="jsonViewMeta" class="json-view-meta"></span>
+        </div>
+        <pre id="jsonViewContent" class="json-view-pre"><code></code></pre>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCloseJsonView2">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast 通知 -->
+  <div id="toastContainer" class="toast-container"></div>
   </div>
 
   <script src="app.js"></script>
 </body>
+
 </html>
