@@ -275,6 +275,49 @@
     </div>
   </div>
 
+  <!-- 複製編輯器對話框 -->
+  <div id="cloneEditorModal" class="modal">
+    <div class="modal-content modal-editor">
+      <div class="modal-header">
+        <h3 id="cloneEditorTitle">複製選單</h3>
+        <button class="modal-close" id="btnCloseCloneEditor">&times;</button>
+      </div>
+      <div class="modal-body" style="max-height:80vh;overflow-y:auto">
+        <!-- 預覽區 -->
+        <div id="clonePreviewContainer" class="preview-container">
+          <img id="clonePreviewImg" alt="Rich Menu" class="preview-image">
+          <div id="clonePreviewOverlay" class="preview-overlay"></div>
+        </div>
+
+        <!-- 基本設定 -->
+        <div class="clone-settings">
+          <h4>📝 基本設定</h4>
+          <div class="form-row">
+            <div class="form-group">
+              <label for="cloneName">名稱</label>
+              <input type="text" id="cloneName">
+            </div>
+            <div class="form-group">
+              <label for="cloneChatBar">聊天列文字</label>
+              <input type="text" id="cloneChatBar">
+            </div>
+          </div>
+        </div>
+
+        <!-- 區域編輯列表 -->
+        <div class="clone-areas-header">
+          <h4>🎯 點擊區域</h4>
+          <span id="cloneAreasCount" class="json-view-meta"></span>
+        </div>
+        <div id="cloneAreasList" class="clone-areas-list"></div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnCloseCloneEditor2">取消</button>
+        <button class="btn btn-primary" id="btnSubmitClone">🚀 建立選單</button>
+      </div>
+    </div>
+  </div>
+
   <!-- 選單預覽對話框 -->
   <div id="previewModal" class="modal">
     <div class="modal-content modal-preview">

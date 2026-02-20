@@ -1034,6 +1034,132 @@ a:hover {
   color: var(--accent);
 }
 
+/* ── 複製編輯器 ── */
+.modal-editor {
+  max-width: 860px;
+}
+
+.clone-settings {
+  margin-top: var(--space-lg);
+  padding: var(--space-md);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+
+.clone-settings h4,
+.clone-areas-header h4 {
+  font-size: 0.95rem;
+  margin-bottom: var(--space-sm);
+}
+
+.clone-areas-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-lg);
+  margin-bottom: var(--space-sm);
+}
+
+.clone-areas-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.clone-area-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.clone-area-card:hover {
+  border-color: var(--text-secondary);
+}
+
+.clone-area-card.active {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+
+.clone-area-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--bg-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.clone-area-head:hover {
+  background: var(--bg-hover);
+}
+
+.clone-area-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.clone-area-badge {
+  font-size: 0.72rem;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: 600;
+}
+
+.clone-area-badge[data-type="message"] {
+  background: rgba(6, 199, 85, 0.15);
+  color: #06c755;
+}
+
+.clone-area-badge[data-type="uri"] {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
+
+.clone-area-badge[data-type="postback"] {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.clone-area-badge[data-type="richmenuswitch"] {
+  background: rgba(168, 85, 247, 0.15);
+  color: #a855f7;
+}
+
+.clone-area-toggle {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+
+.clone-area-card.open .clone-area-toggle {
+  transform: rotate(180deg);
+}
+
+.clone-area-body {
+  display: none;
+  padding: var(--space-md);
+  border-top: 1px solid var(--border);
+}
+
+.clone-area-card.open .clone-area-body {
+  display: block;
+}
+
+.clone-area-coords {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-family: monospace;
+  margin-bottom: var(--space-sm);
+}
+
 /* ── 響應式 ── */
 @media (max-width: 768px) {
   .sidebar {

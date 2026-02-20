@@ -371,34 +371,293 @@ window.setAsDefault = async function (richMenuId) {
 };
 
 /**
- * 複製現有選單到編輯器
- * 剖除 richMenuId，名稱加上「(副本)」，切換到「建立選單」頁並填入 JSON 編輯器
+ * 複製現有選單 — 視覺化編輯器
+ * 上方圖片 + 覆蓋區域，下方可編輯各區域的 action
  */
-window.cloneMenu = function (richMenuId) {
+
+// NOTE: 用來暫存複製編輯器的選單副本
+let cloneEditorData = null;
+
+const cloneEditorModal = document.getElementById('cloneEditorModal');
+
+document.getElementById('btnCloseCloneEditor').addEventListener('click', () => {
+    cloneEditorModal.classList.remove('open');
+});
+document.getElementById('btnCloseCloneEditor2').addEventListener('click', () => {
+    cloneEditorModal.classList.remove('open');
+});
+
+/**
+ * 根據 action 類型渲染對應的編輯欄位
+ * @param {object} action - action 物件
+ * @param {number} idx - area 索引
+ * @returns {string} HTML
+ */
+function renderActionFields(action, idx) {
+    const typeOptions = [
+        { value: 'uri', label: '🔗 開啟連結' },
+        { value: 'message', label: '💬 發送文字' },
+        { value: 'postback', label: '📮 Postback' },
+        { value: 'richmenuswitch', label: '🔄 換頁選單' },
+        { value: 'datetimepicker', label: '📅 日期選擇' },
+        { value: 'clipboard', label: '📋 複製文字' },
+    ];
+
+    let html = `
+        <div class="form-group">
+            <label>Action 類型</label>
+            <select data-area="${idx}" data-field="type" onchange="onCloneTypeChange(${idx}, this.value)">
+                ${typeOptions.map((o) => `<option value="${o.value}" ${o.value === action.type ? 'selected' : ''}>${o.label}</option>`).join('')}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>標籤（label）</label>
+            <input type="text" data-area="${idx}" data-field="label" value="${action.label || ''}">
+        </div>`;
+
+    // NOTE: 根據不同 action 類型渲染對應欄位
+    switch (action.type) {
+        case 'uri':
+            html += `
+                <div class="form-group">
+                    <label>連結 URL</label>
+                    <input type="url" data-area="${idx}" data-field="uri" value="${action.uri || ''}" placeholder="https://example.com">
+                </div>`;
+            break;
+        case 'message':
+            html += `
+                <div class="form-group">
+                    <label>發送文字</label>
+                    <input type="text" data-area="${idx}" data-field="text" value="${action.text || ''}">
+                </div>`;
+            break;
+        case 'postback':
+            html += `
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="text" data-area="${idx}" data-field="data" value="${action.data || ''}">
+                </div>
+                <div class="form-group">
+                    <label>顯示文字（可選）</label>
+                    <input type="text" data-area="${idx}" data-field="displayText" value="${action.displayText || ''}">
+                </div>`;
+            break;
+        case 'richmenuswitch':
+            html += `
+                <div class="form-group">
+                    <label>目標別名 ID</label>
+                    <input type="text" data-area="${idx}" data-field="richMenuAliasId" value="${action.richMenuAliasId || ''}">
+                </div>
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="text" data-area="${idx}" data-field="data" value="${action.data || ''}">
+                </div>`;
+            break;
+        case 'datetimepicker':
+            html += `
+                <div class="form-group">
+                    <label>Data</label>
+                    <input type="text" data-area="${idx}" data-field="data" value="${action.data || ''}">
+                </div>
+                <div class="form-group">
+                    <label>模式</label>
+                    <select data-area="${idx}" data-field="mode">
+                        <option value="datetime" ${action.mode === 'datetime' ? 'selected' : ''}>日期時間</option>
+                        <option value="date" ${action.mode === 'date' ? 'selected' : ''}>僅日期</option>
+                        <option value="time" ${action.mode === 'time' ? 'selected' : ''}>僅時間</option>
+                    </select>
+                </div>`;
+            break;
+        case 'clipboard':
+            html += `
+                <div class="form-group">
+                    <label>複製內容</label>
+                    <input type="text" data-area="${idx}" data-field="clipboardText" value="${action.clipboardText || ''}">
+                </div>`;
+            break;
+    }
+
+    return html;
+}
+
+/** 渲染所有區域編輯卡片 */
+function renderCloneAreaCards() {
+    const list = document.getElementById('cloneAreasList');
+    document.getElementById('cloneAreasCount').textContent =
+        `共 ${cloneEditorData.areas.length} 個`;
+
+    list.innerHTML = cloneEditorData.areas
+        .map((area, idx) => {
+            const { bounds, action } = area;
+            const info = getActionTypeInfo(action.type);
+            return `
+            <div class="clone-area-card open" id="cloneArea${idx}">
+                <div class="clone-area-head" onclick="toggleCloneArea(${idx})">
+                    <div class="clone-area-title">
+                        ${info.icon} 區域 ${idx + 1}
+                        <span class="clone-area-badge" data-type="${action.type}">${info.label}</span>
+                    </div>
+                    <span class="clone-area-toggle">▼</span>
+                </div>
+                <div class="clone-area-body" id="cloneAreaBody${idx}">
+                    <div class="clone-area-coords">
+                        座標: x:${bounds.x} y:${bounds.y} w:${bounds.width} h:${bounds.height}
+                    </div>
+                    ${renderActionFields(action, idx)}
+                </div>
+            </div>`;
+        })
+        .join('');
+}
+
+/** 切換區域卡片展開/收合 */
+window.toggleCloneArea = function (idx) {
+    document.getElementById(`cloneArea${idx}`).classList.toggle('open');
+};
+
+/** Action 類型變更時重新渲染該區域的欄位 */
+window.onCloneTypeChange = function (idx, newType) {
+    const area = cloneEditorData.areas[idx];
+    // NOTE: 保留 bounds 和 label，重建 action
+    area.action = { type: newType, label: area.action.label || '' };
+    renderCloneAreaCards();
+    // 重新渲染後自動展開被修改的區域
+    document.getElementById(`cloneArea${idx}`).classList.add('open');
+};
+
+/** 渲染複製編輯器中的圖片覆蓋區域（可點擊高亮對應卡片） */
+function renderCloneOverlayAreas(menu, imgEl) {
+    const overlay = document.getElementById('clonePreviewOverlay');
+    overlay.innerHTML = '';
+
+    menu.areas.forEach((area, idx) => {
+        const { bounds, action } = area;
+        const info = getActionTypeInfo(action.type);
+        const el = document.createElement('div');
+        el.className = 'preview-area';
+        el.dataset.type = action.type;
+        el.style.left = `${(bounds.x / menu.size.width) * 100}%`;
+        el.style.top = `${(bounds.y / menu.size.height) * 100}%`;
+        el.style.width = `${(bounds.width / menu.size.width) * 100}%`;
+        el.style.height = `${(bounds.height / menu.size.height) * 100}%`;
+
+        const labelText = action.label || action.text || action.uri || `區域 ${idx + 1}`;
+        el.innerHTML = `
+            <span class="preview-area-label">${info.icon} ${labelText}</span>
+            <span class="preview-area-type">${info.label}</span>`;
+
+        // 點擊圖片區域時，高亮並滾動到對應的編輯卡片
+        el.addEventListener('click', () => {
+            document.querySelectorAll('.clone-area-card').forEach((c) => c.classList.remove('active'));
+            const card = document.getElementById(`cloneArea${idx}`);
+            card.classList.add('active');
+            card.classList.add('open');
+            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        });
+
+        overlay.appendChild(el);
+    });
+}
+
+/** 從表單欄位收集資料並組成 Rich Menu JSON */
+function collectCloneData() {
+    const data = JSON.parse(JSON.stringify(cloneEditorData));
+    data.name = document.getElementById('cloneName').value.trim();
+    data.chatBarText = document.getElementById('cloneChatBar').value.trim();
+
+    // 收集每個區域的 action 欄位
+    data.areas.forEach((area, idx) => {
+        const fields = document.querySelectorAll(`[data-area="${idx}"]`);
+        const action = { type: area.action.type };
+
+        fields.forEach((field) => {
+            const key = field.dataset.field;
+            const val = field.value.trim();
+            if (key && val && key !== 'type') {
+                action[key] = val;
+            }
+        });
+
+        area.action = action;
+    });
+
+    return data;
+}
+
+/** 開啟複製編輯器 */
+window.cloneMenu = async function (richMenuId) {
     const menu = currentMenus.find((m) => m.richMenuId === richMenuId);
     if (!menu) {
         toast('找不到選單資料', 'error');
         return;
     }
 
-    // NOTE: 深拷貝並移除 richMenuId，因為建立新選單不應帶舊 ID
-    const cloneData = JSON.parse(JSON.stringify(menu));
-    delete cloneData.richMenuId;
-    cloneData.name = `${cloneData.name}（副本）`;
+    // 深拷貝並移除 richMenuId
+    cloneEditorData = JSON.parse(JSON.stringify(menu));
+    const originalId = cloneEditorData.richMenuId;
+    delete cloneEditorData.richMenuId;
+    cloneEditorData.name = `${cloneEditorData.name}（副本）`;
 
-    const jsonStr = JSON.stringify(cloneData, null, 2);
+    // 設定標題與基本欄位
+    document.getElementById('cloneEditorTitle').textContent = `複製選單 — ${menu.name}`;
+    document.getElementById('cloneName').value = cloneEditorData.name;
+    document.getElementById('cloneChatBar').value = cloneEditorData.chatBarText;
 
-    // 切換到「建立選單」頁籤
-    document.querySelector('[data-section="create"]').click();
+    // 渲染區域卡片
+    renderCloneAreaCards();
 
-    // 填入 JSON 編輯器
-    const editor = document.getElementById('jsonEditor');
-    editor.value = jsonStr;
-    editor.scrollTop = 0;
-    editor.focus();
+    // 載入圖片
+    const imgEl = document.getElementById('clonePreviewImg');
+    document.getElementById('clonePreviewOverlay').innerHTML = '';
 
-    toast(`已複製「${menu.name}」的設定到編輯器，修改後點擊「建立選單」`, 'success');
+    try {
+        const res = await fetch(`/api/richmenus/${originalId}/image`);
+        if (res.ok) {
+            const blob = await res.blob();
+            imgEl.src = URL.createObjectURL(blob);
+        } else {
+            imgEl.src = `data:image/svg+xml,${encodeURIComponent(
+                `<svg xmlns="http://www.w3.org/2000/svg" width="${menu.size.width}" height="${menu.size.height}"><rect fill="%23333" width="100%" height="100%"/><text x="50%" y="50%" fill="%23888" text-anchor="middle" dominant-baseline="central" font-size="48">尚未上傳圖片</text></svg>`
+            )}`;
+        }
+    } catch {
+        imgEl.src = `data:image/svg+xml,${encodeURIComponent(
+            `<svg xmlns="http://www.w3.org/2000/svg" width="${menu.size.width}" height="${menu.size.height}"><rect fill="%23333" width="100%" height="100%"/><text x="50%" y="50%" fill="%23888" text-anchor="middle" dominant-baseline="central" font-size="48">無法載入圖片</text></svg>`
+        )}`;
+    }
+
+    imgEl.onload = () => {
+        renderCloneOverlayAreas(cloneEditorData, imgEl);
+    };
+
+    cloneEditorModal.classList.add('open');
 };
+
+/** 建立選單按鈕 */
+document.getElementById('btnSubmitClone').addEventListener('click', async () => {
+    try {
+        const menuData = collectCloneData();
+
+        if (!menuData.name) {
+            toast('請輸入選單名稱', 'error');
+            return;
+        }
+
+        const { data: result } = await api('/api/richmenus', {
+            method: 'POST',
+            body: JSON.stringify(menuData),
+        });
+
+        toast(`選單已建立！ID：${result.richMenuId}`, 'success');
+        cloneEditorModal.classList.remove('open');
+
+        // 切換到選單管理頁並重新載入
+        document.querySelector('[data-section="menus"]').click();
+        loadMenus();
+    } catch (err) {
+        toast(err.message, 'error');
+    }
+});
 
 // ============================================================
 // 圖片上傳
