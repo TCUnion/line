@@ -207,7 +207,8 @@ async function loadMenus() {
           <div class="menu-card-actions">
             <button class="btn btn-sm btn-primary" onclick="previewMenu('${menu.richMenuId}')">👁️ 預覽</button>
             <button class="btn btn-sm btn-secondary" onclick="viewMenuJson('${menu.richMenuId}')">📄 JSON</button>
-            <button class="btn btn-sm btn-secondary" onclick="openUploadModal('${menu.richMenuId}', '${menu.name}')">🖼️ 上傳圖片</button>
+            <button class="btn btn-sm btn-secondary" onclick="cloneMenu('${menu.richMenuId}')">📋 複製</button>
+            <button class="btn btn-sm btn-secondary" onclick="openUploadModal('${menu.richMenuId}', '${menu.name}')">🖼️ 上傳</button>
             <button class="btn btn-sm btn-secondary" onclick="setAsDefault('${menu.richMenuId}')">⭐ 預設</button>
             <button class="btn btn-sm btn-danger" onclick="deleteMenu('${menu.richMenuId}')">🗑️</button>
           </div>
@@ -367,6 +368,36 @@ window.setAsDefault = async function (richMenuId) {
     } catch (err) {
         toast(err.message, 'error');
     }
+};
+
+/**
+ * 複製現有選單到編輯器
+ * 剖除 richMenuId，名稱加上「(副本)」，切換到「建立選單」頁並填入 JSON 編輯器
+ */
+window.cloneMenu = function (richMenuId) {
+    const menu = currentMenus.find((m) => m.richMenuId === richMenuId);
+    if (!menu) {
+        toast('找不到選單資料', 'error');
+        return;
+    }
+
+    // NOTE: 深拷貝並移除 richMenuId，因為建立新選單不應帶舊 ID
+    const cloneData = JSON.parse(JSON.stringify(menu));
+    delete cloneData.richMenuId;
+    cloneData.name = `${cloneData.name}（副本）`;
+
+    const jsonStr = JSON.stringify(cloneData, null, 2);
+
+    // 切換到「建立選單」頁籤
+    document.querySelector('[data-section="create"]').click();
+
+    // 填入 JSON 編輯器
+    const editor = document.getElementById('jsonEditor');
+    editor.value = jsonStr;
+    editor.scrollTop = 0;
+    editor.focus();
+
+    toast(`已複製「${menu.name}」的設定到編輯器，修改後點擊「建立選單」`, 'success');
 };
 
 // ============================================================
