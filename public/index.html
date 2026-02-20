@@ -275,6 +275,45 @@
     </div>
   </div>
 
+  <!-- 選單預覽對話框 -->
+  <div id="previewModal" class="modal">
+    <div class="modal-content modal-preview">
+      <div class="modal-header">
+        <h3 id="previewTitle">選單預覽</h3>
+        <button class="modal-close" id="btnClosePreview">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="previewMeta" class="modal-desc"></p>
+        <div class="preview-legend">
+          <span class="legend-item"><span class="legend-color"
+              style="background:rgba(6,199,85,0.5)"></span>message</span>
+          <span class="legend-item"><span class="legend-color" style="background:rgba(59,130,246,0.5)"></span>uri</span>
+          <span class="legend-item"><span class="legend-color"
+              style="background:rgba(245,158,11,0.5)"></span>postback</span>
+          <span class="legend-item"><span class="legend-color"
+              style="background:rgba(168,85,247,0.5)"></span>richmenuswitch</span>
+          <span class="legend-item"><span class="legend-color" style="background:rgba(107,114,128,0.5)"></span>其他</span>
+        </div>
+        <div id="previewContainer" class="preview-container">
+          <img id="previewMenuImg" alt="Rich Menu 圖片" class="preview-image">
+          <div id="previewOverlay" class="preview-overlay"></div>
+        </div>
+        <!-- 點擊區域後顯示的詳細資訊 -->
+        <div id="areaDetail" class="area-detail" style="display:none">
+          <div class="area-detail-header">
+            <h4 id="areaDetailTitle"></h4>
+            <button class="btn btn-sm btn-ghost"
+              onclick="document.getElementById('areaDetail').style.display='none'">✕</button>
+          </div>
+          <div id="areaDetailBody" class="area-detail-body"></div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" id="btnClosePreview2">關閉</button>
+      </div>
+    </div>
+  </div>
+
   <!-- Toast 通知 -->
   <div id="toastContainer" class="toast-container"></div>
   </div>

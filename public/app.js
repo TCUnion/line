@@ -205,10 +205,11 @@ async function loadMenus() {
             <div class="menu-card-id">${menu.richMenuId}</div>
           </div>
           <div class="menu-card-actions">
-            <button class="btn btn-sm btn-secondary" onclick="viewMenuJson('${menu.richMenuId}')">📄 查看 JSON</button>
+            <button class="btn btn-sm btn-primary" onclick="previewMenu('${menu.richMenuId}')">👁️ 預覽</button>
+            <button class="btn btn-sm btn-secondary" onclick="viewMenuJson('${menu.richMenuId}')">📄 JSON</button>
             <button class="btn btn-sm btn-secondary" onclick="openUploadModal('${menu.richMenuId}', '${menu.name}')">🖼️ 上傳圖片</button>
-            <button class="btn btn-sm btn-secondary" onclick="setAsDefault('${menu.richMenuId}')">⭐ 設為預設</button>
-            <button class="btn btn-sm btn-danger" onclick="deleteMenu('${menu.richMenuId}')">🗑️ 刪除</button>
+            <button class="btn btn-sm btn-secondary" onclick="setAsDefault('${menu.richMenuId}')">⭐ 預設</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteMenu('${menu.richMenuId}')">🗑️</button>
           </div>
         </div>`;
             })
@@ -730,6 +731,203 @@ document.getElementById('btnCopyJson').addEventListener('click', () => {
         () => toast('複製失敗', 'error')
     );
 });
+
+// ============================================================
+// 選單視覺化預覽
+// ============================================================
+
+const previewModal = document.getElementById('previewModal');
+
+document.getElementById('btnClosePreview').addEventListener('click', () => {
+    previewModal.classList.remove('open');
+});
+document.getElementById('btnClosePreview2').addEventListener('click', () => {
+    previewModal.classList.remove('open');
+});
+
+/**
+ * 取得 action 類型的中文名稱與圖示
+ * @param {string} type - action type
+ * @returns {{ label: string, icon: string }}
+ */
+function getActionTypeInfo(type) {
+    const map = {
+        message: { label: '發送文字', icon: '💬' },
+        uri: { label: '開啟連結', icon: '🔗' },
+        postback: { label: 'Postback', icon: '📮' },
+        richmenuswitch: { label: '換頁選單', icon: '🔄' },
+        datetimepicker: { label: '日期選擇', icon: '📅' },
+        clipboard: { label: '複製文字', icon: '📋' },
+    };
+    return map[type] || { label: type, icon: '⚙️' };
+}
+
+/**
+ * 根據 action 產生詳細資訊的 HTML 列表
+ * @param {object} action - Rich Menu area action
+ * @returns {string} HTML
+ */
+function buildActionDetail(action) {
+    const rows = [];
+
+    const addRow = (key, value) => {
+        if (value === undefined || value === null) return;
+        rows.push(`
+            <div class="area-detail-row">
+                <span class="area-detail-key">${key}</span>
+                <span class="area-detail-value">${value}</span>
+            </div>`);
+    };
+
+    const info = getActionTypeInfo(action.type);
+    addRow('類型', `${info.icon} ${info.label}（${action.type}）`);
+
+    if (action.label) addRow('標籤', action.label);
+
+    switch (action.type) {
+        case 'message':
+            addRow('發送文字', action.text);
+            break;
+        case 'uri':
+            addRow('連結', `<a href="${action.uri}" target="_blank" rel="noopener">${action.uri}</a>`);
+            if (action.altUri?.desktop) addRow('桌面版連結', action.altUri.desktop);
+            break;
+        case 'postback':
+            addRow('Data', `<code>${action.data}</code>`);
+            if (action.displayText) addRow('顯示文字', action.displayText);
+            if (action.text) addRow('發送文字', action.text);
+            break;
+        case 'richmenuswitch':
+            addRow('目標別名', action.richMenuAliasId);
+            addRow('聊天列文字', action.data);
+            break;
+        case 'datetimepicker':
+            addRow('Data', action.data);
+            addRow('模式', action.mode || 'datetime');
+            if (action.initial) addRow('初始值', action.initial);
+            if (action.min) addRow('最小值', action.min);
+            if (action.max) addRow('最大值', action.max);
+            break;
+        case 'clipboard':
+            addRow('複製內容', action.clipboardText);
+            break;
+        default:
+            // 顯示所有非 type/label 的屬性
+            Object.entries(action).forEach(([k, v]) => {
+                if (k !== 'type' && k !== 'label') {
+                    addRow(k, typeof v === 'object' ? JSON.stringify(v) : v);
+                }
+            });
+    }
+
+    return rows.join('');
+}
+
+/**
+ * 在預覽圖上渲染區域覆蓋
+ * @param {object} menu - Rich Menu 物件
+ * @param {HTMLImageElement} imgEl - 已載入的圖片元素
+ */
+function renderPreviewAreas(menu, imgEl) {
+    const overlay = document.getElementById('previewOverlay');
+    overlay.innerHTML = '';
+
+    // NOTE: 圖片容器實際寬高（用於將原始座標映射到顯示尺寸）
+    const displayW = imgEl.clientWidth;
+    const displayH = imgEl.clientHeight;
+    const scaleX = displayW / menu.size.width;
+    const scaleY = displayH / menu.size.height;
+
+    menu.areas.forEach((area, idx) => {
+        const { bounds, action } = area;
+        const info = getActionTypeInfo(action.type);
+
+        const el = document.createElement('div');
+        el.className = 'preview-area';
+        el.dataset.type = action.type;
+
+        // 計算位置與尺寸（百分比定位更穩定）
+        el.style.left = `${(bounds.x / menu.size.width) * 100}%`;
+        el.style.top = `${(bounds.y / menu.size.height) * 100}%`;
+        el.style.width = `${(bounds.width / menu.size.width) * 100}%`;
+        el.style.height = `${(bounds.height / menu.size.height) * 100}%`;
+
+        // 標籤內容
+        const labelText = action.label || action.text || action.uri || action.richMenuAliasId || action.data || `區域 ${idx + 1}`;
+        el.innerHTML = `
+            <span class="preview-area-label">${info.icon} ${labelText}</span>
+            <span class="preview-area-type">${info.label}</span>`;
+
+        // 點擊顯示詳細資訊
+        el.addEventListener('click', () => showAreaDetail(area, idx));
+
+        overlay.appendChild(el);
+    });
+}
+
+/** 顯示選取區域的詳細 action 資訊 */
+function showAreaDetail(area, idx) {
+    const detailEl = document.getElementById('areaDetail');
+    const { bounds, action } = area;
+
+    document.getElementById('areaDetailTitle').textContent =
+        `區域 ${idx + 1}：${action.label || getActionTypeInfo(action.type).label}`;
+
+    let html = buildActionDetail(action);
+    html += `
+        <div class="area-detail-row">
+            <span class="area-detail-key">範圍</span>
+            <span class="area-detail-value">x:${bounds.x} y:${bounds.y} w:${bounds.width} h:${bounds.height}</span>
+        </div>`;
+
+    document.getElementById('areaDetailBody').innerHTML = html;
+    detailEl.style.display = 'block';
+}
+
+/** 開啟預覽彈窗 */
+window.previewMenu = async function (richMenuId) {
+    const menu = currentMenus.find((m) => m.richMenuId === richMenuId);
+    if (!menu) {
+        toast('找不到選單資料', 'error');
+        return;
+    }
+
+    // 設定標題與 meta
+    document.getElementById('previewTitle').textContent = `${menu.name} — 預覽`;
+    document.getElementById('previewMeta').textContent =
+        `尺寸 ${menu.size.width}×${menu.size.height} ・ ${menu.areas.length} 個點擊區域 ・ 聊天列文字「${menu.chatBarText}」`;
+
+    // 隱藏前一次的詳細面板
+    document.getElementById('areaDetail').style.display = 'none';
+    document.getElementById('previewOverlay').innerHTML = '';
+
+    const imgEl = document.getElementById('previewMenuImg');
+
+    // 嘗試載入圖片
+    try {
+        const res = await fetch(`/api/richmenus/${richMenuId}/image`);
+        if (res.ok) {
+            const blob = await res.blob();
+            imgEl.src = URL.createObjectURL(blob);
+        } else {
+            // 無圖片時使用灰色佔位
+            imgEl.src = `data:image/svg+xml,${encodeURIComponent(
+                `<svg xmlns="http://www.w3.org/2000/svg" width="${menu.size.width}" height="${menu.size.height}"><rect fill="%23333" width="100%" height="100%"/><text x="50%" y="50%" fill="%23888" text-anchor="middle" dominant-baseline="central" font-size="48">尚未上傳圖片</text></svg>`
+            )}`;
+        }
+    } catch {
+        imgEl.src = `data:image/svg+xml,${encodeURIComponent(
+            `<svg xmlns="http://www.w3.org/2000/svg" width="${menu.size.width}" height="${menu.size.height}"><rect fill="%23333" width="100%" height="100%"/><text x="50%" y="50%" fill="%23888" text-anchor="middle" dominant-baseline="central" font-size="48">無法載入圖片</text></svg>`
+        )}`;
+    }
+
+    // 等圖片載入後渲染覆蓋區域
+    imgEl.onload = () => {
+        renderPreviewAreas(menu, imgEl);
+    };
+
+    previewModal.classList.add('open');
+};
 
 // ============================================================
 // 初始化
