@@ -283,10 +283,24 @@
         <button class="modal-close" id="btnCloseCloneEditor">&times;</button>
       </div>
       <div class="modal-body" style="max-height:80vh;overflow-y:auto">
+        <!-- 繪製工具列 -->
+        <div class="draw-toolbar">
+          <button class="btn btn-sm btn-secondary draw-tool-btn active" id="btnToolSelect" title="選取模式">
+            🖱️ 選取
+          </button>
+          <button class="btn btn-sm btn-secondary draw-tool-btn" id="btnToolDraw" title="圈選新區域">
+            ✏️ 圈選
+          </button>
+          <button class="btn btn-sm btn-danger draw-tool-btn" id="btnClearAreas" title="清除所有區域">
+            🗑️ 清除
+          </button>
+          <span class="draw-hint" id="drawHint"></span>
+        </div>
         <!-- 預覽區 -->
         <div id="clonePreviewContainer" class="preview-container">
           <img id="clonePreviewImg" alt="Rich Menu" class="preview-image">
           <div id="clonePreviewOverlay" class="preview-overlay"></div>
+          <div id="drawRect" class="draw-rect" style="display:none"></div>
         </div>
 
         <!-- 圖片選項 -->

@@ -381,6 +381,173 @@ document.querySelectorAll('input[name="cloneImageOption"]').forEach((radio) => {
     });
 });
 
+// ============================================================
+// 圈選繪製工具
+// ============================================================
+
+let drawMode = false;
+let isDrawing = false;
+let drawStartX = 0;
+let drawStartY = 0;
+
+const previewContainer = document.getElementById('clonePreviewContainer');
+const drawRectEl = document.getElementById('drawRect');
+const drawHintEl = document.getElementById('drawHint');
+
+/** 切換圈選 / 選取模式 */
+document.getElementById('btnToolSelect').addEventListener('click', () => {
+    setDrawMode(false);
+});
+
+document.getElementById('btnToolDraw').addEventListener('click', () => {
+    setDrawMode(true);
+});
+
+function setDrawMode(enabled) {
+    drawMode = enabled;
+    document.getElementById('btnToolSelect').classList.toggle('active', !enabled);
+    document.getElementById('btnToolDraw').classList.toggle('active', enabled);
+    previewContainer.classList.toggle('draw-mode', enabled);
+    drawHintEl.textContent = enabled ? '在圖片上拖曳滑鼠圈選區域' : '';
+}
+
+/** 清除所有區域 */
+document.getElementById('btnClearAreas').addEventListener('click', () => {
+    if (!cloneEditorData) return;
+    if (!confirm('確定要清除所有區域嗎？')) return;
+    cloneEditorData.areas = [];
+    refreshEditorAreas();
+    toast('已清除所有區域', 'info');
+});
+
+/** 刪除單一區域 */
+window.deleteCloneArea = function (idx) {
+    if (!cloneEditorData) return;
+    cloneEditorData.areas.splice(idx, 1);
+    refreshEditorAreas();
+};
+
+/** 重新渲染 overlay 和卡片 */
+function refreshEditorAreas() {
+    renderCloneAreaCards();
+    const imgEl = document.getElementById('clonePreviewImg');
+    renderCloneOverlayAreas(cloneEditorData, imgEl);
+}
+
+/**
+ * 取得滑鼠在預覽容器中的相對位置（比例）
+ * @param {MouseEvent} e
+ * @returns {{ rx: number, ry: number }} 0~1 的比例值
+ */
+function getRelativePos(e) {
+    const imgEl = document.getElementById('clonePreviewImg');
+    const rect = imgEl.getBoundingClientRect();
+    return {
+        rx: Math.max(0, Math.min(1, (e.clientX - rect.left) / rect.width)),
+        ry: Math.max(0, Math.min(1, (e.clientY - rect.top) / rect.height)),
+    };
+}
+
+/** mousedown：開始圈選 */
+previewContainer.addEventListener('mousedown', (e) => {
+    if (!drawMode || !cloneEditorData) return;
+    e.preventDefault();
+    isDrawing = true;
+    const pos = getRelativePos(e);
+    drawStartX = pos.rx;
+    drawStartY = pos.ry;
+
+    drawRectEl.style.left = `${pos.rx * 100}%`;
+    drawRectEl.style.top = `${pos.ry * 100}%`;
+    drawRectEl.style.width = '0';
+    drawRectEl.style.height = '0';
+    drawRectEl.style.display = 'block';
+});
+
+/** mousemove：更新繪製矩形 */
+previewContainer.addEventListener('mousemove', (e) => {
+    if (!isDrawing) return;
+    e.preventDefault();
+    const pos = getRelativePos(e);
+
+    const left = Math.min(drawStartX, pos.rx);
+    const top = Math.min(drawStartY, pos.ry);
+    const width = Math.abs(pos.rx - drawStartX);
+    const height = Math.abs(pos.ry - drawStartY);
+
+    drawRectEl.style.left = `${left * 100}%`;
+    drawRectEl.style.top = `${top * 100}%`;
+    drawRectEl.style.width = `${width * 100}%`;
+    drawRectEl.style.height = `${height * 100}%`;
+
+    // 即時顯示座標
+    if (cloneEditorData) {
+        const { width: mw, height: mh } = cloneEditorData.size;
+        const x = Math.round(left * mw);
+        const y = Math.round(top * mh);
+        const w = Math.round(width * mw);
+        const h = Math.round(height * mh);
+        drawHintEl.textContent = `x:${x} y:${y} w:${w} h:${h}`;
+    }
+});
+
+/** mouseup：完成圈選，建立新 area */
+previewContainer.addEventListener('mouseup', (e) => {
+    if (!isDrawing) return;
+    isDrawing = false;
+    drawRectEl.style.display = 'none';
+
+    const pos = getRelativePos(e);
+    const left = Math.min(drawStartX, pos.rx);
+    const top = Math.min(drawStartY, pos.ry);
+    const width = Math.abs(pos.rx - drawStartX);
+    const height = Math.abs(pos.ry - drawStartY);
+
+    // 忽略太小的範圍（防止誤觸）
+    if (width < 0.02 || height < 0.02) {
+        drawHintEl.textContent = '在圖片上拖曳滑鼠圈選區域';
+        return;
+    }
+
+    const { width: mw, height: mh } = cloneEditorData.size;
+    const bounds = {
+        x: Math.round(left * mw),
+        y: Math.round(top * mh),
+        width: Math.round(width * mw),
+        height: Math.round(height * mh),
+    };
+
+    // NOTE: 建立新 area 並加入 cloneEditorData
+    const newIdx = cloneEditorData.areas.length + 1;
+    cloneEditorData.areas.push({
+        bounds,
+        action: {
+            type: 'uri',
+            label: `區域 ${newIdx}`,
+            uri: 'https://example.com',
+        },
+    });
+
+    refreshEditorAreas();
+    toast(`已新增區域 ${newIdx}`, 'success');
+    drawHintEl.textContent = '在圖片上拖曳滑鼠圈選區域';
+
+    // 自動展開並滾動到新區域卡片
+    const newCard = document.getElementById(`cloneArea${cloneEditorData.areas.length - 1}`);
+    if (newCard) {
+        newCard.classList.add('open', 'active');
+        newCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+});
+
+/** 滑鼠離開容器時取消繪製 */
+previewContainer.addEventListener('mouseleave', () => {
+    if (isDrawing) {
+        isDrawing = false;
+        drawRectEl.style.display = 'none';
+    }
+});
+
 /**
  * 根據 action 類型渲染對應的編輯欄位
  * @param {object} action - action 物件
@@ -491,7 +658,10 @@ function renderCloneAreaCards() {
                         ${info.icon} 區域 ${idx + 1}
                         <span class="clone-area-badge" data-type="${action.type}">${info.label}</span>
                     </div>
-                    <span class="clone-area-toggle">▼</span>
+                    <div style="display:flex;align-items:center;gap:4px">
+                        <button class="clone-area-delete" onclick="event.stopPropagation();deleteCloneArea(${idx})" title="刪除此區域">🗑️</button>
+                        <span class="clone-area-toggle">▼</span>
+                    </div>
                 </div>
                 <div class="clone-area-body" id="cloneAreaBody${idx}">
                     <div class="clone-area-coords">
@@ -647,6 +817,7 @@ async function openAdvancedEditor(menuData, originalMenuId) {
         renderCloneOverlayAreas(cloneEditorData, imgEl);
     };
 
+    setDrawMode(false);
     cloneEditorModal.classList.add('open');
 }
 
