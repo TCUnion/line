@@ -277,30 +277,15 @@ async function loadTemplates() {
     }
 }
 
-// NOTE: 全域函式供 onclick 使用
+// NOTE: 全域函式 — 從模板開啟視覺化編輯器
 window.createFromTemplate = async function (templateId) {
     try {
         const { data: templates } = await api('/api/templates');
         const template = templates.find((t) => t.id === templateId);
         if (!template || !template.data) return;
 
-        const menuData = JSON.parse(JSON.stringify(template.data));
-
-        const name = prompt('選單名稱（用於管理識別）：', menuData.name);
-        if (!name) return;
-        menuData.name = name;
-
-        const chatBarText = prompt('聊天列顯示文字：', menuData.chatBarText);
-        if (chatBarText) menuData.chatBarText = chatBarText;
-
-        const { data: result } = await api('/api/richmenus', {
-            method: 'POST',
-            body: JSON.stringify(menuData),
-        });
-
-        toast(`選單已建立！ID：${result.richMenuId}`, 'success');
-        // 切換到選單管理頁並載入
-        document.querySelector('[data-section="menus"]').click();
+        // 使用模板資料填入 clone editor
+        openAdvancedEditor(JSON.parse(JSON.stringify(template.data)), null);
     } catch (err) {
         toast(err.message, 'error');
     }
@@ -593,51 +578,69 @@ function collectCloneData() {
     return data;
 }
 
-/** 開啟複製編輯器 */
-window.cloneMenu = async function (richMenuId) {
-    const menu = currentMenus.find((m) => m.richMenuId === richMenuId);
-    if (!menu) {
-        toast('找不到選單資料', 'error');
-        return;
+/**
+ * 通用視覺化選單編輯器
+ * 可從「複製選單」或「模板建立」呼叫
+ * @param {object} menuData - 選單資料（不含 richMenuId）
+ * @param {string|null} originalMenuId - 原始選單 ID（用於複製圖片），null 表示從模板建立
+ */
+async function openAdvancedEditor(menuData, originalMenuId) {
+    cloneEditorData = menuData;
+    cloneOriginalId = originalMenuId;
+
+    // 決定標題
+    const isClone = !!originalMenuId;
+    document.getElementById('cloneEditorTitle').textContent = isClone
+        ? `複製選單 — ${menuData.name.replace('（副本）', '')}`
+        : `✨ 進階建立 — ${menuData.name}`;
+
+    // 設定基本欄位
+    document.getElementById('cloneName').value = menuData.name;
+    document.getElementById('cloneChatBar').value = menuData.chatBarText;
+
+    // NOTE: 圖片選項根據模式不同設定
+    const radioOriginal = document.querySelector('input[name="cloneImageOption"][value="original"]');
+    const radioUpload = document.querySelector('input[name="cloneImageOption"][value="upload"]');
+    const radioNone = document.querySelector('input[name="cloneImageOption"][value="none"]');
+
+    if (isClone) {
+        // 複製模式：預設使用原圖片
+        radioOriginal.parentElement.style.display = '';
+        radioOriginal.checked = true;
+        radioUpload.checked = false;
+        radioNone.checked = false;
+    } else {
+        // 模板模式：隱藏「使用原圖片」，預設「上傳新圖片」
+        radioOriginal.parentElement.style.display = 'none';
+        radioOriginal.checked = false;
+        radioUpload.checked = true;
+        radioNone.checked = false;
     }
-
-    // 深拷貝並移除 richMenuId
-    cloneEditorData = JSON.parse(JSON.stringify(menu));
-    cloneOriginalId = cloneEditorData.richMenuId;
-    delete cloneEditorData.richMenuId;
-
-    // 重設圖片選項
-    document.querySelector('input[name="cloneImageOption"][value="original"]').checked = true;
-    document.getElementById('cloneImageUploadArea').style.display = 'none';
+    document.getElementById('cloneImageUploadArea').style.display = isClone ? 'none' : 'block';
     document.getElementById('cloneImageFile').value = '';
-    cloneEditorData.name = `${cloneEditorData.name}（副本）`;
-
-    // 設定標題與基本欄位
-    document.getElementById('cloneEditorTitle').textContent = `複製選單 — ${menu.name}`;
-    document.getElementById('cloneName').value = cloneEditorData.name;
-    document.getElementById('cloneChatBar').value = cloneEditorData.chatBarText;
 
     // 渲染區域卡片
     renderCloneAreaCards();
 
-    // 載入圖片
+    // 載入圖片（複製模式從 API 取，模板模式使用佔位圖）
     const imgEl = document.getElementById('clonePreviewImg');
     document.getElementById('clonePreviewOverlay').innerHTML = '';
 
-    try {
-        const res = await fetch(`/api/richmenus/${cloneOriginalId}/image`);
-        if (res.ok) {
-            const blob = await res.blob();
-            imgEl.src = URL.createObjectURL(blob);
-        } else {
-            imgEl.src = `data:image/svg+xml,${encodeURIComponent(
-                `<svg xmlns="http://www.w3.org/2000/svg" width="${menu.size.width}" height="${menu.size.height}"><rect fill="%23333" width="100%" height="100%"/><text x="50%" y="50%" fill="%23888" text-anchor="middle" dominant-baseline="central" font-size="48">尚未上傳圖片</text></svg>`
-            )}`;
+    if (isClone) {
+        try {
+            const res = await fetch(`/api/richmenus/${originalMenuId}/image`);
+            if (res.ok) {
+                const blob = await res.blob();
+                imgEl.src = URL.createObjectURL(blob);
+            } else {
+                setPlaceholderImage(imgEl, menuData.size, '尚未上傳圖片');
+            }
+        } catch {
+            setPlaceholderImage(imgEl, menuData.size, '無法載入圖片');
         }
-    } catch {
-        imgEl.src = `data:image/svg+xml,${encodeURIComponent(
-            `<svg xmlns="http://www.w3.org/2000/svg" width="${menu.size.width}" height="${menu.size.height}"><rect fill="%23333" width="100%" height="100%"/><text x="50%" y="50%" fill="%23888" text-anchor="middle" dominant-baseline="central" font-size="48">無法載入圖片</text></svg>`
-        )}`;
+    } else {
+        // 模板模式：渲染佈局示意圖
+        setLayoutPreview(imgEl, menuData);
     }
 
     imgEl.onload = () => {
@@ -645,6 +648,45 @@ window.cloneMenu = async function (richMenuId) {
     };
 
     cloneEditorModal.classList.add('open');
+}
+
+/** 設定佔位圖片 */
+function setPlaceholderImage(imgEl, size, text) {
+    imgEl.src = `data:image/svg+xml,${encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${size.width}" height="${size.height}"><rect fill="%23333" width="100%" height="100%"/><text x="50%" y="50%" fill="%23888" text-anchor="middle" dominant-baseline="central" font-size="48">${text}</text></svg>`
+    )}`;
+}
+
+/** 模板模式佈局示意：用 SVG 繪製各區域方塊 */
+function setLayoutPreview(imgEl, menuData) {
+    const { width, height } = menuData.size;
+    const colors = ['%2306c755', '%233b82f6', '%23f59e0b', '%23a855f7', '%23ec4899', '%236b7280'];
+    let rects = '';
+    menuData.areas.forEach((area, i) => {
+        const { x, y, width: w, height: h } = area.bounds;
+        const fill = colors[i % colors.length];
+        rects += `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}" opacity="0.25" stroke="${fill}" stroke-width="4"/>`;
+        rects += `<text x="${x + w / 2}" y="${y + h / 2}" fill="white" text-anchor="middle" dominant-baseline="central" font-size="56" font-weight="600">區域 ${i + 1}</text>`;
+    });
+    imgEl.src = `data:image/svg+xml,${encodeURIComponent(
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}"><rect fill="%231e1e2e" width="100%" height="100%"/>${rects}</svg>`
+    )}`;
+}
+
+/** 開啟複製編輯器（從現有選單複製） */
+window.cloneMenu = async function (richMenuId) {
+    const menu = currentMenus.find((m) => m.richMenuId === richMenuId);
+    if (!menu) {
+        toast('找不到選單資料', 'error');
+        return;
+    }
+
+    const originalId = menu.richMenuId;
+    const menuData = JSON.parse(JSON.stringify(menu));
+    delete menuData.richMenuId;
+    menuData.name = `${menuData.name}（副本）`;
+
+    await openAdvancedEditor(menuData, originalId);
 };
 
 /** 建立選單按鈕（含圖片處理） */
